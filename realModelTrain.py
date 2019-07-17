@@ -4,6 +4,7 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Dropout, Flatten, Dense
 from keras import applications
+from keras.models import load_model
 
 #dimensions of the images (from tutorial)
 img_width, img_height= 150, 150
@@ -13,7 +14,7 @@ train_data_dir="train"
 validation_data_dir="validation"
 nb_train_samples=65
 nb_validation_samples=9
-epochs=50
+epochs=2
 
 #first the model wil be trained on the first batch_size, then the next batch_size, then the next batch_size
 batch_size=1
@@ -73,14 +74,13 @@ def train_top_model():
 		validation_steps=nb_validation_samples // batch_size,
 		validation_data=(validation_data, validation_labels))
 	model.save_weights(top_model_weights_path)
+	return model
 
-save_bottleneck_features()
-train_top_model()
+def main():
+	save_bottleneck_features()
+	model = train_top_model()
 
+	# serialize model to JSON
+	model.save("model.h5")
 
-
-
-
-
-
-
+main()
