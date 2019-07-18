@@ -7,6 +7,7 @@ import numpy as np
 #change name of this fxn at some point
 def findHand():
 	camera = cv2.VideoCapture(0)
+	counter=51
 	while (True):
 		# region of interest (ROI) coordinates
 		top, right, bottom, left = 200, 0, 450, 250
@@ -32,10 +33,11 @@ def findHand():
 	    #if you pressed 'y' then the thing will take a picture and show you
 		if keypress == ord('y'):
 			cv2.imshow("Image", roi)
-			keypress = cv2.waitKey(1) & 0xFF
+			keypress = cv2.waitKey(300) & 0xFF
 			#if you press y again it will ask you for the name of the image and then save it
 			if keypress == ord('y'):
-				cv2.imwrite('unnamed' + '.jpg', roi)
+				cv2.imwrite('gMajor' + str(counter) + '.jpg', roi)
+				counter=counter+1
 		if keypress == ord('q'):
 			break
 findHand()
