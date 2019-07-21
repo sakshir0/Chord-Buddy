@@ -9,15 +9,14 @@ from keras import optimizers
 from keras.preprocessing.image import ImageDataGenerator
 from keras.preprocessing.image import img_to_array, load_img
 
-train_dir = 'train'
-test_dir = 'test'
-test_imgs = os.listdir(test_dir)
+
+train_dir = 'Chord_Pictures/'
 train_imgs = os.listdir(train_dir)
 random.shuffle(train_imgs) #randomly shuffle training dataset
 
 nrows = 150
 ncolumns = 150
-channels = 3 #change to 1 if you want to use greyscale img
+channels = 3
 
 def read_and_process_images(dir, list_of_images):
 	'''
@@ -28,14 +27,32 @@ def read_and_process_images(dir, list_of_images):
 	for image in list_of_images:
 		X.append(cv2.resize(cv2.imread(dir+image, cv2.IMREAD_COLOR), (nrows, ncolumns),
 				 interpolation=cv2.INTER_CUBIC))
-		if 'cMajor' in image:
+		if 'aMajor' in image:
 			y.append(0)
-		elif 'dMajor' in image:
+		elif 'aMinor' in image:
 			y.append(1)
+		elif 'bMinor' in image:
+			y.append(2)
+		elif 'cMajor' in image:
+			y.append(3)
+		elif 'dMajor' in image:
+			y.append(4)
+		elif 'dMinor' in image:
+			y.append(5)
+		elif 'eMajor' in image:
+			y.append(6)
+		elif 'eMinor' in image:
+			y.append(7)
+		elif 'fMajor' in image:
+			y.append(8)
+		elif 'eMinor' in image:
+			y.append(7)
+		elif 'gMajor' in image:
+			y.append(8)
 	return X, y
 
 #gets arrays for training and validation data set
-X, y = read_and_process_images('train/', train_imgs)
+X, y = read_and_process_images(train_dir, train_imgs)
 X = np.array(X)
 y = np.array(y)
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.20, random_state=2)
@@ -43,7 +60,7 @@ X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.20, random_s
 ntrain = len(X_train)
 nval = len(X_val)
 #should be factor of 2
-batch_size = 2
+batch_size = 4
 
 #using VGG neural net with added Flatten layer
 #dropout layer which randomly drops some layers in order to prevent overfitting
@@ -60,7 +77,7 @@ model.add(layers.MaxPooling2D((2,2)))
 model.add(layers.Flatten())
 model.add(layers.Dropout(0.5))
 model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dense(2, activation='softmax'))
+model.add(layers.Dense(9, activation='softmax'))
 
 #get rid of water later
 model.summary()
@@ -72,18 +89,22 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer='rmsprop', metri
 #Create augmentation configuration, which will help prevent overfitting
 #imageDataGenerator decodes jpeg into rgb grid of pixels, 
 #into floating point tensors, rescales pixels, and easily augments imgs
+print("generating data")
+train_datagen = ImageDataGenerator(rescale=1./255)
+'''
 train_datagen = ImageDataGenerator(rescale=1./255,
 								   rotation_range=40,
 								   width_shift_range=0.2,
 								   height_shift_range=0.2,
 								   shear_range=0.2,
 								   horizontal_flip=True)
+'''
 val_datagen = ImageDataGenerator(rescale=1./255)
-
+print("data generation done")
 #Create image generators
 train_generator = train_datagen.flow(X_train, y_train, batch_size=batch_size)
 val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
-
+print("starting fitting?")
 #train the model. We train for 50 epochs with about 100 steps per epoch
 history = model.fit_generator(train_generator,
 							  steps_per_epoch=ntrain // batch_size,
