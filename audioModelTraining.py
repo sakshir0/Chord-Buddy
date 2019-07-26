@@ -17,7 +17,7 @@ nrows=150
 ncolumns=150
 channels=3 #change to 1 is you want to use greyscale
 
-def read_and_process_images(dir, list_of_images):
+def read_and_process_audio_images(dir, list_of_images):
 	'''
 	returns two arrays. X is array of resizes imgs. y is array of labels
 	'''
@@ -49,7 +49,7 @@ def read_and_process_images(dir, list_of_images):
 	return X, y
 
 #gets arrays for training and validation data set
-X, y = read_and_process_images('chordPlots/', train_imgs)
+X, y = read_and_process_audio_images('chordPlots/', train_imgs)
 X = np.array(X)
 y = np.array(y)
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.20, random_state=2)
@@ -74,7 +74,7 @@ model.add(layers.MaxPooling2D((2,2)))
 model.add(layers.Flatten())
 model.add(layers.Dropout(0.5))
 model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dense(9, activation='softmax'))
+model.add(layers.Dense(10, activation='softmax'))
 
 #get rid of water later
 model.summary()
@@ -87,15 +87,8 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer='rmsprop', metri
 #imageDataGenerator decodes jpeg into rgb grid of pixels, 
 #into floating point tensors, rescales pixels, and easily augments imgs
 print("generating data")
+train_datagen= ImageDataGenerator(rescale=1./255)
 
-'''
-train_datagen = ImageDataGenerator(rescale=1./255,
-								   rotation_range=40,
-								   width_shift_range=0.2,
-								   height_shift_range=0.2,
-								   shear_range=0.2,
-								   horizontal_flip=True)
-'''
 val_datagen = ImageDataGenerator(rescale=1./255)
 print("data generation done")
 #Create image generators

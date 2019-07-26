@@ -45,10 +45,8 @@ def read_and_process_images(dir, list_of_images):
 			y.append(7)
 		elif 'fMajor' in image:
 			y.append(8)
-		elif 'eMinor' in image:
-			y.append(7)
 		elif 'gMajor' in image:
-			y.append(8)
+			y.append(9)
 	return X, y
 
 #gets arrays for training and validation data set
@@ -77,7 +75,8 @@ model.add(layers.MaxPooling2D((2,2)))
 model.add(layers.Flatten())
 model.add(layers.Dropout(0.5))
 model.add(layers.Dense(512, activation='relu'))
-model.add(layers.Dense(9, activation='softmax'))
+#this might need to be 9
+model.add(layers.Dense(10, activation='softmax'))
 
 #get rid of water later
 model.summary()
