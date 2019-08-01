@@ -1,4 +1,4 @@
-# Chord-Helper
+# Chord Buddy
 
 ## Inspiration ##
 Learning and memorizing chords for the guitar is integral for beginner guitar players. Chords are the building blocks of most songs and so learning them makes playing songs much easier. We wanted to create a tool that would make it easier to guitar players to memorize chords and to be told when their finger placement or sound is incorrect. 
