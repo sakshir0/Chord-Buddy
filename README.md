@@ -19,3 +19,6 @@ Download the source code and then run python userPart.py in terminal to run the 
 - [Keras](https://keras.io/)
 - [OpenCV](https://opencv.org/)
 - [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/docs/)
+
+## Video Demo ##
+https://www.youtube.com/watch?v=QcUJGFT56Gk
