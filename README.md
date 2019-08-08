@@ -1,7 +1,7 @@
 # Chord Buddy
 
 ## Inspiration ##
-Learning and memorizing chords for the guitar is integral for beginner guitar players. Chords are the building blocks of most songs and so learning them makes playing songs much easier. We wanted to create a tool that would make it easier to guitar players to memorize chords and to be told when their finger placement or sound is incorrect. 
+Learning and memorizing chords for the guitar is integral for beginner guitar players. Chords are the building blocks of most songs and so learning them makes playing songs much easier. We wanted to create a tool that would make it easier for guitar players to memorize chords and to be told when their finger placement or sound is incorrect. 
 
 ## What It Does ##
 The application displays chords on the screen for the user to play and then uses two neural networks to determine if the shape and sound of the chord the user played is correct. 
