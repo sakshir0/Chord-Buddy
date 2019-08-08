@@ -28,6 +28,7 @@ for chord_wav in chord_wavs:
 	freqs=fftfreq(samples,1/samplerate)
 	plt.plot(freqs,fftabs)
 	plt.show()
+	break
 	'''
 	plt.xlim([10,samplerate/2])
 	plt.ylim([0,10000000])

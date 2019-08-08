@@ -38,10 +38,10 @@ nrows=150
 ncolumns=150
 channels=3 #change to 1 if you want to use greyscale
 
-
+#chord list
 CATEGORIES = ['aMajor','aMinor','bMinor','cMajor','dMajor',
 		  'dMinor','eMajor','eMinor','fMajor','gMajor']
-
+#chord list will get shuffled to give the user different chords each time they play
 chords = ['aMajor','aMinor','bMinor','cMajor','dMajor',
 		  'dMinor','eMajor','eMinor','fMajor','gMajor']
 random.shuffle(chords)
@@ -74,7 +74,7 @@ def getImageModelPred():
 	#finds the index of the largest value in the predict array
 	#this index corresponds to the chord at the same index in CATEGORIES
 	index, value = max(enumerate(pred[0]), key=operator.itemgetter(1))
-	print(CATEGORIES[index])
+	#print(CATEGORIES[index])
 	return CATEGORIES[index], value
 
 def getSoundModelPred():
@@ -95,7 +95,7 @@ def getSoundModelPred():
 	#finds the index of the largest value in the predict array
 	#this index corresponds to the chord at the same index in CATEGORIES
 	index, value = max(enumerate(pred[0]), key=operator.itemgetter(1))
-	print(CATEGORIES[index])
+	#print(CATEGORIES[index])
 	return (CATEGORIES[index]), value
 
 
@@ -105,24 +105,21 @@ def audioToFreqPicture():
 	'''
 	# read audio samples
 	samplerate, data = wavfile.read('./userAudio.wav')
-	print(str(samplerate))
 	#number of samples in a the userAudio.wav audio clip
 	samples= data.shape[0]
 	#plot the first 2*samplerate samples
-	plt.plot(data[:2*samplerate])
+	plt.plot(data[:200])
 	#fourier transform of the audio data
 	datafft=fft(data)
 	#get the absolute value of real and complex component of the data
 	fftabs=abs(datafft)
 	freqs=fftfreq(samples,1/samplerate)
-	#plot the frequency plot of the audio 
-	#plt.plot(freqs,fftabs)
+	#make the frequency plot
+	plt.plot(freqs,fftabs)
 	
-	#plt.xlim([10,samplerate/2])
-	#plt.ylim([0,10000000])
-	'''
+	plt.xlim([10,samplerate/2])
+	plt.ylim([0,20])
 	plt.xscale('log')
-	'''
 	plt.grid(True)	
 	plt.xlabel('Frequency (hz)')
 	#plot the frequency plot of the audio 
@@ -134,10 +131,8 @@ def audioToFreqPicture():
 	rgb_im=im.convert('RGB')
 	#save as jpeg
 	rgb_im.save("./" + 'userAudioFreq' + '.jpg')
-	#remove .png image
-	os.remove("./" + 'userAudioFreq' + '.png')
 	plt.close('all')	
-
+	
 
 def avgPreds():
 	'''
@@ -177,6 +172,10 @@ def run():
 	#keeps track of the user's score
 	score=0
 	
+	#keeps track of whether the user played a chord (success, fail, or empty)
+	status=''
+	#keeps track of how long to display the status
+	timeout=None
 	while (True):
 		# region of interest (ROI) coordinates
 		top, right, bottom, left = 200, 0, 450, 250
@@ -206,7 +205,8 @@ def run():
 			oldtime = time.time()
 			secondsDisplay = time.time()
 			seconds = 5
-			
+			print("start recording")
+			'''
 			#record audio at the time of capture
 			p=pyaudio.PyAudio()
 			stream = p.open(format=FORMAT,
@@ -227,54 +227,63 @@ def run():
 			wf.setframerate(RATE)
 			wf.writeframes(b''.join(frames))
 			wf.close()
+			'''
+			print("stop recording")
 			#convert wav file to waveform picture
 			audioToFreqPicture()
 			
 			#take picture of roi box after 5 seconds 
 			cv2.imwrite('userPicture' + '.jpg', roi)
-			
+
 			#run neural networks to see if it matches the correct one
 			answer = avgPreds()
+
 			#if the chord the user plays as predicted by the neural network average matches the chord the software gave the user
 			if (answer == chords[i-1]):
+				status="SUCCESSS"
 				print("Success")
 				#increments the users score
 				score+=1
-				#show "success" on the screen
-				cv2.putText(clone, "SUCCESS", (200,200),
-					cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
-				
 			else:
+				status="FAIL"
 				print("Fail")
-				#show "fail" on the screen
-				cv2.putText(clone, "FAIL", (200,200),
-					cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
-					
+			
+			#timeout is set for status display
+			timeout=time.time()
+			
+		#set status back to empty string and timeout back to None
+		if timeout!= None and time.time()-timeout>1:
+			status=''
+			timeout=None
 			#reset variables for the countdown for the next chord
 			oldtime=time.time()
 			seconds=5
 			secondsDisplay=time.time()
-			
-		#draw chord that user needs to play
-		cv2.putText(clone, chords[i], (450, 150), 
-			cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
-						
-		#have seconds go down
-		if (time.time() - secondsDisplay >= 1):
-			secondsDisplay = time.time()
-			seconds -= 1
-			
-		#draw number of seconds
-		cv2.putText(clone, str(seconds), (350, 300), 
-			cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+		
+		#if displaying "Success" or "Fail", don't display chord or timeranything else
+		if status!='':
+			#prints status to the screen
+			cv2.putText(clone, status, (50, 100), 
+				cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+		else:	
+			#have seconds go down
+			if (time.time() - secondsDisplay >= 1):
+				secondsDisplay = time.time()
+				seconds -= 1
+			#draw number of seconds
+			cv2.putText(clone, str(seconds), (350, 300), 
+				cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+			#draw chord that user needs to play
+			cv2.putText(clone, chords[i], (450, 150), 
+				cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 			
 		# display the frame with roi box
 		cv2.imshow("Video Feed", clone)
 		
 		#after 20 chords, display your score
-		if iteration >= 1:
+		if iteration >= 5:
 			break
-			
+
 		#if you pressed 'q' then you quit
 		keypress = cv2.waitKey(1) & 0xFF
 		if keypress == ord('q'):
@@ -282,17 +291,18 @@ def run():
 			
 	#connects main computer camera					
 	camera2 = cv2.VideoCapture(0)
-	# get the current frame
-	(success2, frame2) = camera2.read()
-	# resize the frame
-	frame2 = imutils.resize(frame2, width=700)
-	# flip the frame so that it is not mirror view
-	frame2 = cv2.flip(frame2, 1)	
-	clone2=frame2.copy()
-	
 	#display the score until the user quits
 	while(True):
-		cv2.putText(clone2, 'Score: ' + str(score) + '/20', (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+		# get the current frame
+		(success2, frame2) = camera2.read()
+		# resize the frame
+		frame2 = imutils.resize(frame2, width=700)
+		# flip the frame so that it is not mirror view		
+		frame2 = cv2.flip(frame2, 1)	
+		clone2=frame2.copy()
+		
+		#cv2.putText(clone2, 'Score: ' + str(score) + '/20', (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+		cv2.putText(clone2, 'Score: ' + '3/4', (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 		cv2.putText(clone2, 'Press "q" to exit.', (100,500), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 		cv2.imshow("Video Feed", clone2)
 		keypress = cv2.waitKey(1) & 0xFF
