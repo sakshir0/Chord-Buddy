@@ -21,4 +21,4 @@ Download the source code and then run python userPart.py in terminal to run the 
 - [PyAudio](https://people.csail.mit.edu/hubert/pyaudio/docs/)
 
 ## Video Demo ##
-https://www.youtube.com/watch?v=QcUJGFT56Gk
+https://www.youtube.com/watch?v=v-ZyjnXY_lk&feature=youtu.be
