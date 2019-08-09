@@ -25,10 +25,13 @@ from os import walk
 from scipy.fftpack import fft, fftfreq
 from PIL import Image
 
-#variables for audio recording
+#variables for audio recording audio
+#each 1024 samples will be found per buffer
 CHUNK=1024
 FORMAT=pyaudio.paInt16
+#each frame will be split into 2 samples
 CHANNELS=2
+#frames per second
 RATE=44100
 RECORD_SECONDS=2
 WAVE_OUTPUT_FILENAME='userAudio.wav'
@@ -36,7 +39,8 @@ WAVE_OUTPUT_FILENAME='userAudio.wav'
 #variables for image processing
 nrows=150
 ncolumns=150
-channels=3 #change to 1 if you want to use greyscale
+#change to 1 if you want to use greyscale
+channels=3 
 
 #chord list
 CATEGORIES = ['aMajor','aMinor','bMinor','cMajor','dMajor',
@@ -51,6 +55,7 @@ def read_and_process_images(dir, list_of_images):
 	returns X, an array of resizes imgs
 	'''
 	X = []
+	#loops through images in list_of_images array
 	for image in list_of_images:
 		X.append(cv2.resize(cv2.imread(dir+image, cv2.IMREAD_COLOR), (nrows, ncolumns),
 				 interpolation=cv2.INTER_CUBIC))
@@ -117,9 +122,11 @@ def audioToFreqPicture():
 	#make the frequency plot
 	plt.plot(freqs,fftabs)
 	
+	#frequency plot x and y limits
 	plt.xlim([10,samplerate/2])
 	plt.ylim([0,20])
 	plt.xscale('log')
+	#include gridlines
 	plt.grid(True)	
 	plt.xlabel('Frequency (hz)')
 	#plot the frequency plot of the audio 
@@ -157,6 +164,9 @@ def avgPreds():
 			return predSound
 
 def run():
+	'''
+	runs the program in a new window
+	'''
 	#connects main computer camera
 	camera = cv2.VideoCapture(0)
 	#will be compared to time.time() at later intervals to see how many seconds have passed
@@ -198,37 +208,41 @@ def run():
 		
 		#5 seconds have passed, display next chord
 		if (time.time() - oldtime > 5):
+			#keeps track of the number of chords that have been displayed to the user
 			iteration+=1
-			print(str(iteration))
 			i+=1
 			i = i % len(chords)
 			oldtime = time.time()
 			secondsDisplay = time.time()
 			seconds = 5
-			print("start recording")
-			'''
+			
 			#record audio at the time of capture
 			p=pyaudio.PyAudio()
+			#initializes stream 
 			stream = p.open(format=FORMAT,
                 		channels=CHANNELS,
                 		rate=RATE,
                 		input=True,
                 		frames_per_buffer=CHUNK)
+			#array of frames will get populated as audio recording happens
 			frames=[]
+			#will last the length of the recording time
 			for j in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     				data = stream.read(CHUNK)
     				frames.append(data)
+			#stop and close the stream
 			stream.stop_stream()
 			stream.close()
+			#close PyAudio
 			p.terminate()
+			#save the recording as a .wav file
 			wf = wave.open('userAudio.wav', 'wb')
 			wf.setnchannels(CHANNELS)
 			wf.setsampwidth(p.get_sample_size(FORMAT))
 			wf.setframerate(RATE)
 			wf.writeframes(b''.join(frames))
 			wf.close()
-			'''
-			print("stop recording")
+
 			#convert wav file to waveform picture
 			audioToFreqPicture()
 			
@@ -241,12 +255,10 @@ def run():
 			#if the chord the user plays as predicted by the neural network average matches the chord the software gave the user
 			if (answer == chords[i-1]):
 				status="SUCCESSS"
-				print("Success")
 				#increments the users score
 				score+=1
 			else:
 				status="FAIL"
-				print("Fail")
 			
 			#timeout is set for status display
 			timeout=time.time()
@@ -260,9 +272,9 @@ def run():
 			seconds=5
 			secondsDisplay=time.time()
 		
-		#if displaying "Success" or "Fail", don't display chord or timeranything else
+		#if displaying "Success" or "Fail", don't display chord or time or anything else
 		if status!='':
-			#prints status to the screen
+			#draws status 
 			cv2.putText(clone, status, (50, 100), 
 				cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 		else:	
@@ -281,8 +293,8 @@ def run():
 		cv2.imshow("Video Feed", clone)
 		
 		#after 20 chords, display your score
-		if iteration >= 5:
-			break
+		#if iteration >= 5:
+			#break
 
 		#if you pressed 'q' then you quit
 		keypress = cv2.waitKey(1) & 0xFF
@@ -301,8 +313,8 @@ def run():
 		frame2 = cv2.flip(frame2, 1)	
 		clone2=frame2.copy()
 		
-		#cv2.putText(clone2, 'Score: ' + str(score) + '/20', (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
-		cv2.putText(clone2, 'Score: ' + '3/4', (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
+		#display the user's score
+		cv2.putText(clone2, 'Score: ' + str(score)+ '/'+ str(iteration), (200,200), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 		cv2.putText(clone2, 'Press "q" to exit.', (100,500), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 0))
 		cv2.imshow("Video Feed", clone2)
 		keypress = cv2.waitKey(1) & 0xFF

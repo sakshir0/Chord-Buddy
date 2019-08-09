@@ -28,8 +28,7 @@ for chord_wav in chord_wavs:
 	freqs=fftfreq(samples,1/samplerate)
 	plt.plot(freqs,fftabs)
 	plt.show()
-	break
-	'''
+
 	plt.xlim([10,samplerate/2])
 	plt.ylim([0,10000000])
 	plt.xscale('log')
@@ -43,4 +42,3 @@ for chord_wav in chord_wavs:
 	rgb_im.save("chordPlots/" + chord_wav.split('.')[0] + '.jpg')
 	os.remove("chordPlots/" + chord_wav.split('.')[0] + '.png')
 	plt.close('all')
-	'''
